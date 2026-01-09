@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobedi Email Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .company-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .company-logo-header {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: white;
+            padding: 8px;
+        }
+        
+        .company-info h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .company-info p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .compose-btn {
+            background: #34C759;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(52, 199, 89, 0.3);
+        }
+        
+        .compose-btn:hover {
+            background: #28a745;
+            transform: translateY(-1px);
+        }
+        
+        .email-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .email-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .email-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .sender {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .subject {
+            font-size: 16px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        
+        .preview {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .reply-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .reply-btn:hover {
+            background: #0056b3;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 10px;
+            border-radius: 10px;
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .send-btn {
+            background: #34C759;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .send-btn:hover {
+            background: #28a745;
+        }
+        
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .file-input {
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .file-input:hover {
+            border-color: #007AFF;
+        }
+        
+        .file-list {
+            margin-top: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-size {
+            color: #666;
+            font-size: 12px;
+            margin: 0 10px;
+        }
+        
+        .remove-file {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .email-signature-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007AFF;
+        }
+        
+        .signature-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .signature-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .signature-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+        }
+        
+        .signature-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .signature-website {
+            color: #007AFF;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .signature-email {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .refresh-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-header">
+            <img src="images/Bobedi IT Group.png" alt="Bobedi IT Group" class="company-logo-header">
+            <div class="company-info">
+                <h1>Bobedi IT Group</h1>
+                <p>Manage Bobedi IT Group emails on the go</p>
+            </div>
+        </div>
+        <button class="compose-btn" onclick="openComposeModal()">✏️ Compose Email</button>
+    </div>
+    
+    <div id="email-container">
+        <div class="loading">Loading emails...</div>
+    </div>
+    
+    <!-- Reply Modal -->
+    <div id="reply-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reply to Email</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reply-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>To:</label>
+                        <input type="email" id="reply-to" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject:</label>
+                        <input type="text" id="reply-subject" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Reply:</label>
+                        <textarea id="reply-message" placeholder="Type your reply here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>📎 Attach Files:</label>
+                        <input type="file" id="reply-files" multiple accept="*/*" class="file-input">
+                        <div class="file-list" id="reply-file-list"></div>
+                    </div>
+                    <div class="email-signature-preview">
+                        <div class="signature-label">Email Signature:</div>
+                        <div class="signature-content">
+                            <img src="images/Bobedi IT Group.png" alt="Bobedi IT Group" class="signature-logo">
+                            <div class="signature-info">
+                                <div class="signature-website">www.bobediitgroup.co.za</div>
+                                <div class="signature-email">info@bobediitgroup.co.za</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="send-btn">Send Reply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compose Modal -->
+    <div id="compose-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Compose New Email</h3>
+                <button class="close-btn" onclick="closeComposeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="compose-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>To:</label>
+                        <input type="email" id="compose-to" placeholder="recipient@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject:</label>
+                        <input type="text" id="compose-subject" placeholder="Email subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message:</label>
+                        <textarea id="compose-message" placeholder="Type your message here..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>📎 Attach Files:</label>
+                        <input type="file" id="compose-files" multiple accept="*/*" class="file-input">
+                        <div class="file-list" id="compose-file-list"></div>
+                    </div>
+                    <div class="email-signature-preview">
+                        <div class="signature-label">Email Signature:</div>
+                        <div class="signature-content">
+                            <img src="images/Bobedi IT Group.png" alt="Bobedi IT Group" class="signature-logo">
+                            <div class="signature-info">
+                                <div class="signature-website">www.bobediitgroup.co.za</div>
+                                <div class="signature-email">info@bobediitgroup.co.za</div>
+                        
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="send-btn">📧 Send Email</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let emails = [];
+        let currentEmail = null;
+        
+        async function loadEmails() {
+            try {
+                const response = await fetch('/api/emails');
+                if (!response.ok) throw new Error('Failed to load emails');
+                
+                emails = await response.json();
+                renderEmails();
+            } catch (error) {
+                console.error('Error loading emails:', error);
+                document.getElementById('email-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>Unable to load emails</p>
+                        <button class="refresh-btn" onclick="loadEmails()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderEmails() {
+            const container = document.getElementById('email-container');
+            
+            if (emails.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>📭 No emails yet</p>
+                        <button class="refresh-btn" onclick="loadEmails()">Refresh</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const emailsHTML = emails.map(email => `
+                <div class="email-card">
+                    <div class="email-header">
+                        <div class="sender">${email.from}</div>
+                        <div class="time">${formatTime(email.timestamp)}</div>
+                    </div>
+                    <div class="subject">${email.subject || 'No Subject'}</div>
+                    <div class="preview">${truncateText(email.text || email.html || 'No content', 100)}</div>
+                    <button class="reply-btn" onclick="openReplyModal('${email.id}')">Reply</button>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="email-list">
+                    ${emailsHTML}
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="refresh-btn" onclick="loadEmails()">Refresh</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+            
+            return date.toLocaleDateString();
+        }
+        
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        function openReplyModal(emailId) {
+            currentEmail = emails.find(e => e.id === emailId);
+            if (!currentEmail) return;
+            
+            document.getElementById('reply-to').value = currentEmail.from;
+            document.getElementById('reply-subject').value = 'Re: ' + (currentEmail.subject || 'No Subject');
+            document.getElementById('reply-message').value = '';
+            
+            document.getElementById('reply-modal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('reply-modal').style.display = 'none';
+            currentEmail = null;
+        }
+        
+        function openComposeModal() {
+            document.getElementById('compose-to').value = '';
+            document.getElementById('compose-subject').value = '';
+            document.getElementById('compose-message').value = '';
+            
+            document.getElementById('compose-modal').style.display = 'block';
+        }
+        
+        function closeComposeModal() {
+            document.getElementById('compose-modal').style.display = 'none';
+            // Clear file inputs when closing
+            document.getElementById('compose-files').value = '';
+            document.getElementById('compose-file-list').innerHTML = '';
+        }
+        
+        // File handling functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function handleFileSelect(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const fileList = document.getElementById(listId);
+            
+            input.addEventListener('change', function(e) {
+                fileList.innerHTML = '';
+                
+                for (let i = 0; i < e.target.files.length; i++) {
+                    const file = e.target.files[i];
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-name">📎 ${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                        <button type="button" class="remove-file" onclick="removeFile(${i}, '${inputId}', '${listId}')">&times;</button>
+                    `;
+                    fileList.appendChild(fileItem);
+                }
+            });
+        }
+        
+        function removeFile(index, inputId, listId) {
+            const input = document.getElementById(inputId);
+            const dt = new DataTransfer();
+            
+            for (let i = 0; i < input.files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(input.files[i]);
+                }
+            }
+            
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        }
+        
+        // Initialize file handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            handleFileSelect('compose-files', 'compose-file-list');
+            handleFileSelect('reply-files', 'reply-file-list');
+        });
+        
+        document.getElementById('reply-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sendBtn = document.querySelector('#reply-form .send-btn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('to', document.getElementById('reply-to').value);
+                formData.append('subject', document.getElementById('reply-subject').value);
+                formData.append('message', document.getElementById('reply-message').value);
+                formData.append('originalEmailId', currentEmail.id);
+                
+                // Add files
+                const files = document.getElementById('reply-files').files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('attachments', files[i]);
+                }
+                
+                const response = await fetch('/api/reply', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to send reply');
+                }
+                
+                alert('✅ Reply sent successfully!');
+                closeModal();
+                
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                alert('Failed to send reply. Please try again.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Reply';
+            }
+        });
+        
+        // Compose form submission
+        document.getElementById('compose-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sendBtn = document.querySelector('#compose-form .send-btn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('to', document.getElementById('compose-to').value);
+                formData.append('subject', document.getElementById('compose-subject').value);
+                formData.append('message', document.getElementById('compose-message').value);
+                
+                // Add files
+                const files = document.getElementById('compose-files').files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('attachments', files[i]);
+                }
+                
+                const response = await fetch('/api/compose', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to send email');
+                }
+                
+                alert('✅ Email sent successfully!');
+                closeComposeModal();
+                
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('Failed to send email. Please try again.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📧 Send Email';
+            }
+        });
+        
+        // Close modals when clicking outside
+        document.getElementById('reply-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'reply-modal') {
+                closeModal();
+            }
+        });
+        
+        document.getElementById('compose-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'compose-modal') {
+                closeComposeModal();
+            }
+        });
+        
+        // Load emails on page load
+        loadEmails();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadEmails, 30000);
+    </script>
+</body>
+</html>

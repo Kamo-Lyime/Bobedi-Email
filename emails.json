@@ -1,0 +1,59 @@
+[
+  {
+    "id": "1766933110146",
+    "from": "kamo.mokoteli4@gmail.com",
+    "to": [
+      "info@bobediitgroup.co.za"
+    ],
+    "subject": "Email testing",
+    "text": "No content",
+    "html": null,
+    "timestamp": "2025-12-28T14:45:10.146Z",
+    "raw": {
+      "attachments": [],
+      "bcc": [],
+      "cc": [],
+      "created_at": "2025-12-28T14:40:53.220Z",
+      "email_id": "70973570-e0ab-4f20-a6af-5d40b66b3740",
+      "from": "kamo.mokoteli4@gmail.com",
+      "message_id": "<CAKC5++Jhwx7N9Jt1GpGAyUTLYHZW__fh6GnCTTnr=TtTLxQ89g@mail.gmail.com>",
+      "subject": "Email testing",
+      "to": [
+        "info@bobediitgroup.co.za"
+      ]
+    }
+  },
+  {
+    "id": "1766933078334",
+    "from": "saintrakgwale@gmail.com",
+    "to": [
+      "info@bobediitgroup.co.za"
+    ],
+    "subject": "No Subject",
+    "text": "No content",
+    "html": null,
+    "timestamp": "2025-12-28T14:44:38.372Z",
+    "raw": {
+      "attachments": [],
+      "bcc": [],
+      "cc": [],
+      "created_at": "2025-12-28T14:44:35.921Z",
+      "email_id": "8fccbfdc-ae54-43ca-8875-a2df895080ad",
+      "from": "saintrakgwale@gmail.com",
+      "message_id": "<CABkaEWiL3Baj6kQGESaD88rpLfS5Q8hypdp1pRJ35UFSp49Lrg@mail.gmail.com>",
+      "subject": "",
+      "to": [
+        "info@bobediitgroup.co.za"
+      ]
+    }
+  },
+  {
+    "id": "1735406400000",
+    "from": "your-email@example.com",
+    "to": "info@bobediitgroup.co.za",
+    "subject": "Test Email - Hello Bobedi!",
+    "text": "This is a test email to see if the reply system is working correctly. Please reply to confirm!",
+    "html": "<p>This is a test email to see if the reply system is working correctly. Please reply to confirm!</p>",
+    "timestamp": "2025-12-28T12:00:00.000Z"
+  }
+]
