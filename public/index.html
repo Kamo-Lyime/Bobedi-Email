@@ -447,15 +447,23 @@
     </div>
 
     <script>
+        const API_BASE = window.API_BASE_URL || "https://eylfkeqjgvlnmvbkxedv.functions.supabase.co/email-api";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGZrZXFqZ3Zsbm12Ymt4ZWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODkwNjIsImV4cCI6MjA3OTk2NTA2Mn0.lEETpmNY7YPQF3KxChtZsTPBDyHyZMPBL2v9wbvy6gc";
         let emails = [];
         let currentEmail = null;
         
         async function loadEmails() {
             try {
-                const response = await fetch('/api/emails');
+                const response = await fetch(`${API_BASE}/emails`, {
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    }
+                });
                 if (!response.ok) throw new Error('Failed to load emails');
                 
-                emails = await response.json();
+                const payload = await response.json();
+                emails = payload.emails || [];
                 renderEmails();
             } catch (error) {
                 console.error('Error loading emails:', error);
@@ -621,8 +629,12 @@
                     formData.append('attachments', files[i]);
                 }
                 
-                const response = await fetch('/api/reply', {
+                const response = await fetch(`${API_BASE}/reply`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
                     body: formData
                 });
                 
@@ -664,8 +676,12 @@
                     formData.append('attachments', files[i]);
                 }
                 
-                const response = await fetch('/api/compose', {
+                const response = await fetch(`${API_BASE}/compose`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
                     body: formData
                 });
                 
