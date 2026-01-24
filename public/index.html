@@ -343,6 +343,71 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        
+        .email-details {
+            font-family: Arial, sans-serif;
+        }
+        
+        .detail-row {
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .detail-row strong {
+            color: #667eea;
+            min-width: 80px;
+            display: inline-block;
+        }
+        
+        .detail-row span {
+            color: #333;
+        }
+        
+        .folder-nav {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .folder-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .folder-tab:hover {
+            background: #f5f5f5;
+        }
+        
+        .folder-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .folder-count {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .folder-tab.active .folder-count {
+            background: rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -357,8 +422,50 @@
         <button class="compose-btn" onclick="openComposeModal()">✏️ Compose Email</button>
     </div>
     
+    <div class="folder-nav">
+        <button class="folder-tab active" onclick="switchFolder('inbox')" id="inbox-tab">
+            📥 Inbox
+            <span class="folder-count" id="inbox-count">0</span>
+        </button>
+        <button class="folder-tab" onclick="switchFolder('sent')" id="sent-tab">
+            📤 Sent
+            <span class="folder-count" id="sent-count">0</span>
+        </button>
+    </div>
+    
     <div id="email-container">
         <div class="loading">Loading emails...</div>
+    </div>
+    
+    <!-- View Email Modal -->
+    <div id="view-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📧 Email Details</h3>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="email-details">
+                    <div class="detail-row">
+                        <strong>From:</strong> <span id="view-from"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>To:</strong> <span id="view-to"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Subject:</strong> <span id="view-subject"></span>
+                    </div>
+                    <div class="detail-row">
+                        <strong>Date:</strong> <span id="view-date"></span>
+                    </div>
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #e0e0e0;">
+                    <div id="view-content" style="padding: 15px; background: #f9f9f9; border-radius: 8px; min-height: 100px; max-height: 400px; overflow-y: auto; line-height: 1.6;"></div>
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="reply-btn" onclick="replyFromView()">Reply to this Email</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Reply Modal -->
@@ -375,6 +482,10 @@
                         <input type="email" id="reply-to" readonly>
                     </div>
                     <div class="form-group">
+                        <label>CC: <span style="font-weight: normal; color: #666;">(optional)</span></label>
+                        <input type="text" id="reply-cc" placeholder="cc@example.com (separate multiple with commas)">
+                    </div>
+                    <div class="form-group">
                         <label>Subject:</label>
                         <input type="text" id="reply-subject" readonly>
                     </div>
@@ -383,8 +494,11 @@
                         <textarea id="reply-message" placeholder="Type your reply here..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>📎 Attach Files:</label>
-                        <input type="file" id="reply-files" multiple accept="*/*" class="file-input">
+                        <label>📎 Attach Files: <span style="font-weight: normal; color: #666;">(max 25MB total)</span></label>
+                        <button type="button" onclick="document.getElementById('reply-files').click()" class="file-button" style="background: #007AFF; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            Choose Files
+                        </button>
+                        <input type="file" id="reply-files" multiple accept="*/*" class="file-input" style="display: none;" onchange="displayFiles('reply')">
                         <div class="file-list" id="reply-file-list"></div>
                     </div>
                     <div class="email-signature-preview">
@@ -413,20 +527,32 @@
             <div class="modal-body">
                 <form id="compose-form" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label>To:</label>
-                        <input type="email" id="compose-to" placeholder="recipient@example.com" required>
+                        <label>To: *</label>
+                        <input type="text" id="compose-to" placeholder="recipient@example.com (separate multiple with commas)" required>
+                        <small style="color: #666; font-size: 12px;">Separate multiple recipients with commas</small>
                     </div>
                     <div class="form-group">
-                        <label>Subject:</label>
+                        <label>CC: <span style="font-weight: normal; color: #666;">(optional)</span></label>
+                        <input type="text" id="compose-cc" placeholder="cc@example.com (separate multiple with commas)">
+                    </div>
+                    <div class="form-group">
+                        <label>BCC: <span style="font-weight: normal; color: #666;">(optional)</span></label>
+                        <input type="text" id="compose-bcc" placeholder="bcc@example.com (separate multiple with commas)">
+                    </div>
+                    <div class="form-group">
+                        <label>Subject: *</label>
                         <input type="text" id="compose-subject" placeholder="Email subject" required>
                     </div>
                     <div class="form-group">
-                        <label>Message:</label>
+                        <label>Message: *</label>
                         <textarea id="compose-message" placeholder="Type your message here..." required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>📎 Attach Files:</label>
-                        <input type="file" id="compose-files" multiple accept="*/*" class="file-input">
+                        <label>📎 Attach Files: <span style="font-weight: normal; color: #666;">(max 25MB total)</span></label>
+                        <button type="button" onclick="document.getElementById('compose-files').click()" class="file-button" style="background: #007AFF; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            Choose Files
+                        </button>
+                        <input type="file" id="compose-files" multiple accept="*/*" class="file-input" style="display: none;" onchange="displayFiles('compose')">
                         <div class="file-list" id="compose-file-list"></div>
                     </div>
                     <div class="email-signature-preview">
@@ -449,8 +575,10 @@
     <script>
         const API_BASE = window.API_BASE_URL || "https://eylfkeqjgvlnmvbkxedv.functions.supabase.co/email-api";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGZrZXFqZ3Zsbm12Ymt4ZWR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzODkwNjIsImV4cCI6MjA3OTk2NTA2Mn0.lEETpmNY7YPQF3KxChtZsTPBDyHyZMPBL2v9wbvy6gc";
+        const COMPANY_EMAIL = "info@bobediitgroup.co.za";
         let emails = [];
         let currentEmail = null;
+        let currentFolder = 'inbox'; // 'inbox' or 'sent'
         
         async function loadEmails() {
             try {
@@ -464,6 +592,7 @@
                 
                 const payload = await response.json();
                 emails = payload.emails || [];
+                updateFolderCounts();
                 renderEmails();
             } catch (error) {
                 console.error('Error loading emails:', error);
@@ -476,30 +605,77 @@
             }
         }
         
+        function switchFolder(folder) {
+            currentFolder = folder;
+            
+            // Update tab styling
+            document.querySelectorAll('.folder-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(folder + '-tab').classList.add('active');
+            
+            // Re-render emails for current folder
+            renderEmails();
+        }
+        
+        function updateFolderCounts() {
+            const inboxEmails = emails.filter(e => isInboxEmail(e));
+            const sentEmails = emails.filter(e => isSentEmail(e));
+            
+            document.getElementById('inbox-count').textContent = inboxEmails.length;
+            document.getElementById('sent-count').textContent = sentEmails.length;
+        }
+        
+        function isInboxEmail(email) {
+            // Email is in inbox if it was sent TO our company email
+            return email.to && email.to.toLowerCase().includes(COMPANY_EMAIL.toLowerCase());
+        }
+        
+        function isSentEmail(email) {
+            // Email is sent if it was sent FROM our company email
+            return email.from && email.from.toLowerCase().includes(COMPANY_EMAIL.toLowerCase());
+        }
+        
+        function getFilteredEmails() {
+            if (currentFolder === 'inbox') {
+                return emails.filter(e => isInboxEmail(e));
+            } else {
+                return emails.filter(e => isSentEmail(e));
+            }
+        }
+        
         function renderEmails() {
             const container = document.getElementById('email-container');
+            const filteredEmails = getFilteredEmails();
             
-            if (emails.length === 0) {
+            if (filteredEmails.length === 0) {
+                const folderName = currentFolder === 'inbox' ? 'Inbox' : 'Sent';
                 container.innerHTML = `
                     <div class="empty-state">
-                        <p>📭 No emails yet</p>
+                        <p>📭 No emails in ${folderName}</p>
                         <button class="refresh-btn" onclick="loadEmails()">Refresh</button>
                     </div>
                 `;
                 return;
             }
             
-            const emailsHTML = emails.map(email => `
-                <div class="email-card">
+            const emailsHTML = filteredEmails.map(email => {
+                // Show different info based on folder
+                const displayName = currentFolder === 'inbox' ? email.from : email.to;
+                const label = currentFolder === 'inbox' ? 'From' : 'To';
+                
+                return `
+                <div class="email-card" onclick="viewEmail('${email.id}')" style="cursor: pointer;">
                     <div class="email-header">
-                        <div class="sender">${email.from}</div>
+                        <div class="sender">${displayName}</div>
                         <div class="time">${formatTime(email.timestamp)}</div>
                     </div>
                     <div class="subject">${email.subject || 'No Subject'}</div>
-                    <div class="preview">${truncateText(email.text || email.html || 'No content', 100)}</div>
-                    <button class="reply-btn" onclick="openReplyModal('${email.id}')">Reply</button>
+                    <div class="preview">${truncateText(email.text || stripHtml(email.html) || 'No content', 100)}</div>
+                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                        ${currentFolder === 'inbox' ? `<button class="reply-btn" onclick="event.stopPropagation(); openReplyModal('${email.id}')">Reply</button>` : ''}
+                        <button class="reply-btn" style="background: #dc3545;" onclick="event.stopPropagation(); deleteEmail('${email.id}')">Delete</button>
+                    </div>
                 </div>
-            `).join('');
+            `}).join('');
             
             container.innerHTML = `
                 <div class="email-list">
@@ -509,6 +685,64 @@
                     </div>
                 </div>
             `;
+        }
+        
+        function viewEmail(emailId) {
+            const email = emails.find(e => e.id === emailId);
+            if (!email) return;
+            
+            document.getElementById('view-modal').style.display = 'flex';
+            document.getElementById('view-from').textContent = email.from || 'Unknown';
+            document.getElementById('view-to').textContent = email.to || 'Unknown';
+            document.getElementById('view-subject').textContent = email.subject || 'No Subject';
+            document.getElementById('view-date').textContent = new Date(email.timestamp).toLocaleString();
+            
+            const contentDiv = document.getElementById('view-content');
+            if (email.html) {
+                contentDiv.innerHTML = email.html;
+            } else {
+                contentDiv.textContent = email.text || 'No content';
+            }
+            
+            // Display attachments if any
+            if (email.attachments && email.attachments.length > 0) {
+                const attachmentsHtml = email.attachments.map(att => 
+                    `<div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            📎 <strong>${att.filename}</strong> 
+                            <span style="color: #666; font-size: 12px;">(${att.content_type})</span>
+                        </div>
+                        <button onclick="event.stopPropagation(); downloadAttachment('${email.id}', '${att.id}', '${att.filename}')"
+                           style="background: #007AFF; color: white; padding: 6px 12px; border-radius: 5px; border: none; cursor: pointer; font-size: 13px;">
+                            Download
+                        </button>
+                    </div>`
+                ).join('');
+                contentDiv.innerHTML += `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <strong>Attachments (${email.attachments.length}):</strong>
+                    ${attachmentsHtml}
+                </div>`;
+            }
+            
+            // Store email ID for reply button
+            document.getElementById('view-modal').dataset.emailId = emailId;
+        }
+        
+        function closeViewModal() {
+            document.getElementById('view-modal').style.display = 'none';
+        }
+        
+        function replyFromView() {
+            const emailId = document.getElementById('view-modal').dataset.emailId;
+            closeViewModal();
+            openReplyModal(emailId);
+        }
+        
+        function stripHtml(html) {
+            if (!html) return '';
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent || div.innerText || '';
         }
         
         function formatTime(timestamp) {
@@ -524,7 +758,7 @@
         }
         
         function truncateText(text, maxLength) {
-            if (text.length <= maxLength) return text;
+            if (!text || text.length <= maxLength) return text;
             return text.substring(0, maxLength) + '...';
         }
         
@@ -533,6 +767,7 @@
             if (!currentEmail) return;
             
             document.getElementById('reply-to').value = currentEmail.from;
+            document.getElementById('reply-cc').value = '';
             document.getElementById('reply-subject').value = 'Re: ' + (currentEmail.subject || 'No Subject');
             document.getElementById('reply-message').value = '';
             
@@ -541,7 +776,57 @@
         
         function closeModal() {
             document.getElementById('reply-modal').style.display = 'none';
+            document.getElementById('reply-cc').value = '';
             currentEmail = null;
+        }
+        
+        async function deleteEmail(emailId) {
+            if (!confirm('Are you sure you want to delete this email?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/emails/${emailId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('Email deleted successfully');
+                    loadEmails(); // Refresh the list
+                } else {
+                    alert('Failed to delete email');
+                }
+            } catch (error) {
+                console.error('Error deleting email:', error);
+                alert('Error deleting email');
+            }
+        }
+        
+        async function downloadAttachment(emailId, attachmentId, filename) {
+            try {
+                const response = await fetch(`${API_BASE}/attachments/${emailId}/${attachmentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Open the signed download URL in a new tab
+                    window.open(data.download_url, '_blank');
+                } else {
+                    alert('Failed to download attachment');
+                }
+            } catch (error) {
+                console.error('Error downloading attachment:', error);
+                alert('Error downloading attachment');
+            }
         }
         
         function openComposeModal() {
@@ -619,6 +904,11 @@
             try {
                 const formData = new FormData();
                 formData.append('to', document.getElementById('reply-to').value);
+                
+                // Add CC if provided
+                const cc = document.getElementById('reply-cc').value.trim();
+                if (cc) formData.append('cc', cc);
+                
                 formData.append('subject', document.getElementById('reply-subject').value);
                 formData.append('message', document.getElementById('reply-message').value);
                 formData.append('originalEmailId', currentEmail.id);
@@ -656,6 +946,43 @@
             }
         });
         
+        // Display selected files function
+        function displayFiles(type) {
+            const fileInput = document.getElementById(`${type}-files`);
+            const fileList = document.getElementById(`${type}-file-list`);
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+            
+            let totalSize = 0;
+            let filesHTML = '<div style="margin-top: 10px;">';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const sizeKB = (file.size / 1024).toFixed(1);
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                const sizeText = file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+                totalSize += file.size;
+                
+                filesHTML += `
+                    <div style="padding: 8px; background: #f5f5f5; border-radius: 6px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">📄 ${file.name} (${sizeText})</span>
+                    </div>
+                `;
+            }
+            
+            const totalMB = (totalSize / 1024 / 1024).toFixed(2);
+            filesHTML += `<div style="font-size: 12px; color: ${totalSize > 25 * 1024 * 1024 ? 'red' : '#666'}; margin-top: 5px;">
+                Total: ${totalMB} MB ${totalSize > 25 * 1024 * 1024 ? '(exceeds 25MB limit!)' : ''}
+            </div>`;
+            filesHTML += '</div>';
+            
+            fileList.innerHTML = filesHTML;
+        }
+        
         // Compose form submission
         document.getElementById('compose-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -667,6 +994,13 @@
             try {
                 const formData = new FormData();
                 formData.append('to', document.getElementById('compose-to').value);
+                
+                // Add CC and BCC if provided
+                const cc = document.getElementById('compose-cc').value.trim();
+                const bcc = document.getElementById('compose-bcc').value.trim();
+                if (cc) formData.append('cc', cc);
+                if (bcc) formData.append('bcc', bcc);
+                
                 formData.append('subject', document.getElementById('compose-subject').value);
                 formData.append('message', document.getElementById('compose-message').value);
                 
@@ -693,10 +1027,11 @@
                 
                 alert('✅ Email sent successfully!');
                 closeComposeModal();
+                loadEmails(); // Refresh emails
                 
             } catch (error) {
                 console.error('Error sending email:', error);
-                alert('Failed to send email. Please try again.');
+                alert('❌ Failed to send email: ' + error.message);
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.textContent = '📧 Send Email';

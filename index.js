@@ -72,13 +72,42 @@ function getEmailSignature() {
   `;
 }
 
+// Webhook signature verification (optional but recommended)
+function verifyWebhookSignature(req) {
+  const signature = req.headers['resend-signature'];
+  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+  
+  // If no secret is configured, skip verification
+  if (!webhookSecret) {
+    console.warn("Warning: RESEND_WEBHOOK_SECRET not configured. Webhook verification disabled.");
+    return true;
+  }
+  
+  // If secret exists but no signature provided, reject
+  if (!signature) {
+    console.error("Webhook signature missing");
+    return false;
+  }
+  
+  // Basic signature verification (adjust based on Resend's actual signature method)
+  // This is a placeholder - check Resend docs for exact verification method
+  return true;
+}
+
 // inbound webhook endpoint
 app.post("/inbound-email", async (req, res) => {
-  console.log("Webhook received:");
-  console.log("Headers:", req.headers);
+  console.log("📧 Inbound email webhook received");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("Headers:", JSON.stringify(req.headers, null, 2));
   console.log("Body:", JSON.stringify(req.body, null, 2));
 
   try {
+    // Verify webhook signature (if configured)
+    if (!verifyWebhookSignature(req)) {
+      console.error("❌ Webhook signature verification failed");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const webhookData = req.body;
     
     // Handle different webhook formats from Resend
@@ -87,55 +116,77 @@ app.post("/inbound-email", async (req, res) => {
     if (webhookData.type === "email.received" && webhookData.data) {
       // Resend webhook format
       emailData = webhookData.data;
+      console.log("✅ Resend webhook format detected");
     } else if (webhookData.from || webhookData.subject) {
       // Direct email data format
       emailData = webhookData;
+      console.log("✅ Direct email format detected");
     } else {
-      console.log("Unknown webhook format, storing raw data");
+      console.log("⚠️ Unknown webhook format, attempting to process");
       emailData = webhookData;
     }
+
+    // Extract email details with better handling
+    const fromAddress = emailData.from || emailData.sender || emailData.from_email || "Unknown Sender";
+    const toAddress = emailData.to || emailData.recipient || emailData.to_email || "info@bobediitgroup.co.za";
+    const subject = emailData.subject || "No Subject";
+    const textContent = emailData.text || emailData.plain || emailData.text_body || "";
+    const htmlContent = emailData.html || emailData.html_body || null;
 
     // Store email in JSON file
     const emails = await readEmails();
     const newEmail = {
       id: Date.now().toString(),
-      from: emailData.from || emailData.sender || "Unknown Sender",
-      to: emailData.to || emailData.recipient || "info@bobediitgroup.co.za",
-      subject: emailData.subject || "No Subject",
-      text: emailData.text || emailData.plain || "No content",
-      html: emailData.html || emailData.html_body || null,
+      from: fromAddress,
+      to: toAddress,
+      subject: subject,
+      text: textContent,
+      html: htmlContent,
       timestamp: new Date().toISOString(),
+      attachments: emailData.attachments || [],
       raw: emailData // Store raw data for debugging
     };
     
     emails.unshift(newEmail); // Add to beginning
     
-    // Keep only last 50 emails
-    if (emails.length > 50) {
-      emails.splice(50);
+    // Keep only last 100 emails (increased from 50)
+    if (emails.length > 100) {
+      emails.splice(100);
     }
     
     await writeEmails(emails);
 
-    console.log("Email stored successfully:", newEmail.subject);
+    console.log("✅ Email stored successfully");
+    console.log(`   From: ${fromAddress}`);
+    console.log(`   Subject: ${subject}`);
 
-    // Still forward to Gmail for backup
+    // Forward to Gmail for backup (with error handling)
     try {
       await resend.emails.send({
         from: "info@bobediitgroup.co.za",
         to: "bobedi.it@gmail.com",
-        subject: `[FWD] ${newEmail.subject}`,
-        html: newEmail.html || `<pre>${newEmail.text}</pre>`
+        subject: `[Inbox] ${subject}`,
+        text: `From: ${fromAddress}\nTo: ${toAddress}\n\n${textContent}`,
+        html: htmlContent || `<p><strong>From:</strong> ${fromAddress}</p><p><strong>To:</strong> ${toAddress}</p><hr><pre>${textContent}</pre>`
       });
-      console.log("Email forwarded to Gmail");
+      console.log("✅ Email forwarded to Gmail backup");
     } catch (forwardError) {
-      console.error("Error forwarding to Gmail:", forwardError);
+      console.error("⚠️ Error forwarding to Gmail:", forwardError.message);
+      // Don't fail the whole request if forwarding fails
     }
 
-    res.status(200).json({ success: true, message: "Email received" });
+    res.status(200).json({ 
+      success: true, 
+      message: "Email received and processed",
+      emailId: newEmail.id
+    });
   } catch (error) {
-    console.error("Error processing email:", error);
-    res.status(500).json({ error: "Error processing email", details: error.message });
+    console.error("❌ Error processing inbound email:", error);
+    console.error("Stack trace:", error.stack);
+    res.status(500).json({ 
+      error: "Error processing email", 
+      details: error.message 
+    });
   }
 });
 

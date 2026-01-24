@@ -1,18 +1,29 @@
 {
   "name": "bobedi-email",
   "version": "1.0.0",
-  "description": "",
+  "description": "Email management system for Bobedi IT Group",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-webhook": "node test-webhook.js",
+    "test-webhook-local": "node test-webhook.js http://localhost:3000/inbound-email",
+    "deploy-vercel": "vercel --prod",
+    "deploy-supabase": "supabase functions deploy inbound-email && supabase functions deploy email-api",
+    "logs-vercel": "vercel logs",
+    "logs-supabase": "supabase functions logs inbound-email"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "email",
+    "resend",
+    "webhook",
+    "supabase"
+  ],
+  "author": "Bobedi IT Group",
   "license": "ISC",
   "type": "module",
   "dependencies": {
