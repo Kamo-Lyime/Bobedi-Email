@@ -5,7 +5,7 @@ import { Resend } from "npm:resend@4.0.0";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, GET, DELETE, OPTIONS",
+  "Access-Control-Allow-Methods": "POST, GET, DELETE, PATCH, OPTIONS",
 };
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -20,7 +20,7 @@ function jsonResponse(body: unknown, status = 200) {
 async function listEmails() {
   const { data, error } = await supabase
     .from("emails")
-    .select("id, from_address, to_address, subject, text, html, received_at, attachments, resend_email_id")
+    .select("id, from_address, to_address, subject, text, html, received_at, attachments, resend_email_id, read")
     .order("received_at", { ascending: false })
     .limit(50);
 
@@ -36,7 +36,8 @@ async function listEmails() {
     html: email.html,
     timestamp: email.received_at,
     attachments: email.attachments || [],
-    resend_email_id: email.resend_email_id
+    resend_email_id: email.resend_email_id,
+    read: email.read ?? false
   }));
   
   return emails;
@@ -186,6 +187,23 @@ serve(async (req) => {
       }
       
       return jsonResponse({ success: true, message: "Email deleted" });
+    }
+    
+    // Mark email as read endpoint: PATCH /emails/{emailId}/read
+    if (req.method === "PATCH" && url.pathname.includes("/emails/") && url.pathname.endsWith("/read")) {
+      const emailId = url.pathname.split('/')[url.pathname.split('/').length - 2];
+      
+      const { error } = await supabase
+        .from("emails")
+        .update({ read: true })
+        .eq("id", emailId);
+      
+      if (error) {
+        console.error("Mark as read error:", error);
+        return jsonResponse({ error: "Failed to mark email as read" }, 500);
+      }
+      
+      return jsonResponse({ success: true, message: "Email marked as read" });
     }
 
     return jsonResponse({ error: "Not found" }, 404);

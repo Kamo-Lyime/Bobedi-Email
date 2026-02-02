@@ -865,7 +865,6 @@
         let emails = [];
         let currentEmail = null;
         let currentFolder = 'inbox'; // 'inbox', 'read', or 'sent'
-        let readEmails = JSON.parse(localStorage.getItem('readEmails') || '[]'); // Track read email IDs
         
         async function loadEmails() {
             try {
@@ -914,15 +913,30 @@
         }
         
         function isReadEmail(email) {
-            return readEmails.includes(email.id);
+            return email.read === true;
         }
         
-        function markAsRead(emailId) {
-            if (!readEmails.includes(emailId)) {
-                readEmails.push(emailId);
-                localStorage.setItem('readEmails', JSON.stringify(readEmails));
-                updateFolderCounts();
-                renderEmails();
+        async function markAsRead(emailId) {
+            try {
+                const response = await fetch(`${API_BASE}/emails/${emailId}/read`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    // Update local email object
+                    const email = emails.find(e => e.id === emailId);
+                    if (email) {
+                        email.read = true;
+                    }
+                    updateFolderCounts();
+                    renderEmails();
+                }
+            } catch (error) {
+                console.error('Error marking email as read:', error);
             }
         }
         
