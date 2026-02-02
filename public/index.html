@@ -153,6 +153,9 @@
             height: calc(100vh - 20px);
             display: flex;
             flex-direction: column;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .modal-header {
@@ -408,6 +411,285 @@
         .folder-tab.active .folder-count {
             background: rgba(255,255,255,0.3);
         }
+        
+        .email-card.unread {
+            border-left: 4px solid #007AFF;
+            background: #f0f8ff;
+        }
+        
+        .email-card.read {
+            border-left: 4px solid #28a745;
+            opacity: 0.95;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        
+        .status-badge.unread {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .status-badge.read {
+            background: #28a745;
+            color: white;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 15px 10px;
+                margin-bottom: 15px;
+            }
+            
+            .company-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .company-logo-header {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .company-info h1 {
+                font-size: 20px;
+            }
+            
+            .company-info p {
+                font-size: 13px;
+            }
+            
+            .compose-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .folder-nav {
+                flex-wrap: wrap;
+                padding: 10px;
+                gap: 5px;
+            }
+            
+            .folder-tab {
+                padding: 8px 12px;
+                font-size: 13px;
+                flex: 1;
+                min-width: calc(33.33% - 5px);
+                justify-content: center;
+            }
+            
+            .folder-count {
+                padding: 2px 6px;
+                font-size: 11px;
+            }
+            
+            .email-card {
+                padding: 12px;
+            }
+            
+            .sender {
+                font-size: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .status-badge {
+                display: inline-block;
+                margin-left: 0;
+                margin-top: 3px;
+                width: fit-content;
+            }
+            
+            .subject {
+                font-size: 15px;
+            }
+            
+            .preview {
+                font-size: 13px;
+            }
+            
+            .time {
+                font-size: 11px;
+            }
+            
+            /* Modal Responsive Styles */
+            .modal {
+                padding: 0;
+            }
+            
+            .modal-content {
+                margin: 0;
+                border-radius: 0;
+                height: 100vh;
+                width: 100vw;
+            }
+            
+            .modal-header {
+                padding: 15px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            
+            .modal-header h3 {
+                font-size: 18px;
+            }
+            
+            .close-btn {
+                font-size: 28px;
+                padding: 5px;
+                min-width: 40px;
+                min-height: 40px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Form Elements */
+            .form-group {
+                margin-bottom: 12px;
+            }
+            
+            .form-group label {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            
+            .form-group input,
+            .form-group textarea {
+                padding: 10px;
+                font-size: 16px; /* Prevents zoom on iOS */
+                border-radius: 6px;
+            }
+            
+            .form-group textarea {
+                min-height: 120px;
+            }
+            
+            .form-group small {
+                font-size: 11px;
+            }
+            
+            /* Buttons */
+            .send-btn,
+            .reply-btn,
+            .refresh-btn {
+                padding: 12px 20px;
+                font-size: 15px;
+                border-radius: 6px;
+                min-height: 44px; /* Touch-friendly */
+            }
+            
+            .file-button {
+                padding: 10px 15px !important;
+                font-size: 14px !important;
+                width: 100%;
+            }
+            
+            /* Email Details */
+            .email-details {
+                font-size: 14px;
+            }
+            
+            .detail-row {
+                padding: 6px 0;
+                font-size: 13px;
+                word-wrap: break-word;
+            }
+            
+            .detail-row strong {
+                display: block;
+                margin-bottom: 3px;
+                min-width: 100%;
+            }
+            
+            #view-content {
+                padding: 12px;
+                font-size: 14px;
+                max-height: none;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            
+            /* Signature */
+            .email-signature-preview {
+                padding: 12px;
+                margin-top: 12px;
+            }
+            
+            .signature-logo {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .signature-website {
+                font-size: 13px;
+            }
+            
+            .signature-email {
+                font-size: 12px;
+            }
+            
+            /* File Items */
+            .file-item {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+            
+            .file-name {
+                font-size: 12px;
+            }
+            
+            .file-size {
+                font-size: 11px;
+            }
+            
+            .remove-file {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 400px) {
+            .company-info h1 {
+                font-size: 18px;
+            }
+            
+            .folder-tab {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+            
+            .modal-header h3 {
+                font-size: 16px;
+            }
+            
+            .status-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -426,6 +708,10 @@
         <button class="folder-tab active" onclick="switchFolder('inbox')" id="inbox-tab">
             📥 Inbox
             <span class="folder-count" id="inbox-count">0</span>
+        </button>
+        <button class="folder-tab" onclick="switchFolder('read')" id="read-tab">
+            📖 Read
+            <span class="folder-count" id="read-count">0</span>
         </button>
         <button class="folder-tab" onclick="switchFolder('sent')" id="sent-tab">
             📤 Sent
@@ -578,7 +864,8 @@
         const COMPANY_EMAIL = "info@bobediitgroup.co.za";
         let emails = [];
         let currentEmail = null;
-        let currentFolder = 'inbox'; // 'inbox' or 'sent'
+        let currentFolder = 'inbox'; // 'inbox', 'read', or 'sent'
+        let readEmails = JSON.parse(localStorage.getItem('readEmails') || '[]'); // Track read email IDs
         
         async function loadEmails() {
             try {
@@ -617,11 +904,26 @@
         }
         
         function updateFolderCounts() {
-            const inboxEmails = emails.filter(e => isInboxEmail(e));
+            const inboxEmails = emails.filter(e => isInboxEmail(e) && !isReadEmail(e));
+            const readInboxEmails = emails.filter(e => isInboxEmail(e) && isReadEmail(e));
             const sentEmails = emails.filter(e => isSentEmail(e));
             
             document.getElementById('inbox-count').textContent = inboxEmails.length;
+            document.getElementById('read-count').textContent = readInboxEmails.length;
             document.getElementById('sent-count').textContent = sentEmails.length;
+        }
+        
+        function isReadEmail(email) {
+            return readEmails.includes(email.id);
+        }
+        
+        function markAsRead(emailId) {
+            if (!readEmails.includes(emailId)) {
+                readEmails.push(emailId);
+                localStorage.setItem('readEmails', JSON.stringify(readEmails));
+                updateFolderCounts();
+                renderEmails();
+            }
         }
         
         function isInboxEmail(email) {
@@ -636,7 +938,9 @@
         
         function getFilteredEmails() {
             if (currentFolder === 'inbox') {
-                return emails.filter(e => isInboxEmail(e));
+                return emails.filter(e => isInboxEmail(e) && !isReadEmail(e));
+            } else if (currentFolder === 'read') {
+                return emails.filter(e => isInboxEmail(e) && isReadEmail(e));
             } else {
                 return emails.filter(e => isSentEmail(e));
             }
@@ -647,7 +951,7 @@
             const filteredEmails = getFilteredEmails();
             
             if (filteredEmails.length === 0) {
-                const folderName = currentFolder === 'inbox' ? 'Inbox' : 'Sent';
+                const folderName = currentFolder === 'inbox' ? 'Inbox' : currentFolder === 'read' ? 'Read' : 'Sent';
                 container.innerHTML = `
                     <div class="empty-state">
                         <p>📭 No emails in ${folderName}</p>
@@ -659,19 +963,22 @@
             
             const emailsHTML = filteredEmails.map(email => {
                 // Show different info based on folder
-                const displayName = currentFolder === 'inbox' ? email.from : email.to;
-                const label = currentFolder === 'inbox' ? 'From' : 'To';
+                const displayName = (currentFolder === 'inbox' || currentFolder === 'read') ? email.from : email.to;
+                const isRead = isReadEmail(email);
+                const readClass = isRead ? 'read' : 'unread';
+                const statusBadge = (currentFolder === 'inbox' || currentFolder === 'read') ? 
+                    `<span class="status-badge ${readClass}">${isRead ? '✓ Read' : '● Unread'}</span>` : '';
                 
                 return `
-                <div class="email-card" onclick="viewEmail('${email.id}')" style="cursor: pointer;">
+                <div class="email-card ${readClass}" onclick="viewEmail('${email.id}')" style="cursor: pointer;">
                     <div class="email-header">
-                        <div class="sender">${displayName}</div>
+                        <div class="sender">${displayName}${statusBadge}</div>
                         <div class="time">${formatTime(email.timestamp)}</div>
                     </div>
                     <div class="subject">${email.subject || 'No Subject'}</div>
                     <div class="preview">${truncateText(email.text || stripHtml(email.html) || 'No content', 100)}</div>
                     <div style="margin-top: 8px; display: flex; gap: 8px;">
-                        ${currentFolder === 'inbox' ? `<button class="reply-btn" onclick="event.stopPropagation(); openReplyModal('${email.id}')">Reply</button>` : ''}
+                        ${(currentFolder === 'inbox' || currentFolder === 'read') ? `<button class="reply-btn" onclick="event.stopPropagation(); openReplyModal('${email.id}')">Reply</button>` : ''}
                         <button class="reply-btn" style="background: #dc3545;" onclick="event.stopPropagation(); deleteEmail('${email.id}')">Delete</button>
                     </div>
                 </div>
@@ -690,6 +997,11 @@
         function viewEmail(emailId) {
             const email = emails.find(e => e.id === emailId);
             if (!email) return;
+            
+            // Mark as read if it's an inbox email
+            if (isInboxEmail(email)) {
+                markAsRead(emailId);
+            }
             
             document.getElementById('view-modal').style.display = 'flex';
             document.getElementById('view-from').textContent = email.from || 'Unknown';
