@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bobedi Email Manager</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
         }
         
         body {
@@ -897,6 +905,9 @@
             // Update tab styling
             document.querySelectorAll('.folder-tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById(folder + '-tab').classList.add('active');
+            
+            // Reset scroll position to prevent mobile layout issues
+            window.scrollTo(0, 0);
             
             // Re-render emails for current folder
             renderEmails();
