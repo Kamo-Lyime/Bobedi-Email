@@ -58,10 +58,24 @@ async function sendEmail(formData: FormData) {
   const htmlSignature = `\n<br><div style="border-top:2px solid #667eea;padding-top:12px;margin-top:12px;font-family:Arial,sans-serif;">\n    <table cellpadding="0" cellspacing="0" border="0">\n      <tr>\n        <td style="padding-right:12px;vertical-align:middle;">\n          <img src="https://raw.githubusercontent.com/Kamo-Lyime/Bobedi-Email/master/public/images/Bobedi%20IT%20Group.png" alt="Bobedi IT Group" style="width:50px;height:50px;border-radius:8px;" />\n        </td>\n        <td style="vertical-align:middle;">\n          <strong style="color:#333;font-size:15px;">Bobedi IT Group</strong><br>\n          <a href="https://www.bobediitgroup.co.za" style="color:#007AFF;text-decoration:none;font-size:14px;">www.bobediitgroup.co.za</a><br>\n          <a href="mailto:info@bobediitgroup.co.za" style="color:#555;text-decoration:none;font-size:13px;">info@bobediitgroup.co.za</a>\n        </td>\n      </tr>\n    </table>\n  </div>`;
 
   const files = formData.getAll("attachments");
+  console.log(`Processing ${files.length} attachments`);
+  
   const attachments = await Promise.all(files.map(async (item) => {
     if (!(item instanceof File)) return null;
-    const content = new Uint8Array(await item.arrayBuffer());
-    return { filename: item.name, content, type: item.type };
+    const arrayBuffer = await item.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    console.log(`Processing attachment: ${item.name}, size: ${bytes.length} bytes, type: ${item.type}`);
+    // Convert to base64 using Deno's btoa (works with binary data)
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64Content = btoa(binary);
+    return { 
+      filename: item.name, 
+      content: base64Content,
+      content_type: item.type || 'application/octet-stream'
+    };
   }));
 
   const emailPayload: Record<string, unknown> = {
@@ -82,15 +96,25 @@ async function sendEmail(formData: FormData) {
 
   const validAttachments = attachments.filter((a) => a !== null) as Array<Record<string, unknown>>;
   if (validAttachments.length > 0) {
+    console.log(`Adding ${validAttachments.length} attachments to email`);
     emailPayload.attachments = validAttachments;
   }
 
+  console.log('Sending email via Resend...');
   const sent = await resend.emails.send(emailPayload as never);
+  console.log(`Email sent successfully. Resend ID: ${sent?.id}`);
   
   // Build complete recipient list for storage
   const allRecipients = [to];
   if (cc) allRecipients.push(...cc.split(',').map(e => e.trim()));
   if (bcc) allRecipients.push(...bcc.split(',').map(e => e.trim()));
+
+  // Prepare attachment metadata for database storage (without content)
+  const attachmentMetadata = validAttachments.map((att: any) => ({
+    filename: att.filename,
+    content_type: att.content_type,
+    size: att.content?.length || 0
+  }));
 
   await supabase.from("emails").insert({
     id: crypto.randomUUID(),
@@ -100,6 +124,8 @@ async function sendEmail(formData: FormData) {
     text: emailPayload.text as string,
     html: emailPayload.html as string,
     received_at: new Date().toISOString(),
+    attachments: attachmentMetadata.length > 0 ? attachmentMetadata : null,
+    resend_email_id: sent?.id,
     raw_payload: sent,
   });
 
